@@ -115,7 +115,7 @@ The setup script will automatically:
 
 1. **Clone or download this project**
 ```bash
-git clone <repository-url>
+git clone https://github.com/manishsongirkar/lighthouse-automation-suite.git
 cd lighthouse-automation-suite
 ```
 
@@ -157,13 +157,6 @@ python generate_enhanced_html_report.py
 Creates the modern tabbed interface with optimization insights
 
 ### Option 3: Run Individual Components
-
-**Just the PageSpeed analysis:**
-```bash
-python main.py
-```
-
-**For advanced usage, run individual steps:**
 
 **Lighthouse analysis only:**
 ```bash
