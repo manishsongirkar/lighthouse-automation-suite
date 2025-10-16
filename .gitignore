@@ -1,0 +1,5 @@
+pagespeed_results.csv
+pagespeed_report.html
+env
+.venv
+__pycache__
