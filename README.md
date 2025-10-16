@@ -65,7 +65,7 @@ For experienced users who want to get started immediately:
 ```bash
 # Clone the repository
 git clone https://github.com/manishsongirkar/lighthouse-automation-suite.git
-cd pagespeed-insights-automation
+cd lighthouse-automation-suite
 
 # Run automated setup (recommended)
 chmod +x setup.sh
