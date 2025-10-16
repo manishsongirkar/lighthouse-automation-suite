@@ -11,7 +11,13 @@ from pathlib import Path
 
 def cleanup_existing_files():
     """Clean up existing result files before starting new analysis"""
-    files_to_cleanup = ["pagespeed_results.csv", "pagespeed_report.html"]
+    files_to_cleanup = [
+        "pagespeed_results.csv",
+        "pagespeed_report.html",
+        "lighthouse_opportunities.csv",
+        "lighthouse_accessibility.csv",
+        "lighthouse_seo_details.csv"
+    ]
     cleaned_files = []
 
     print("🧹 Cleaning up existing result files...")
@@ -141,12 +147,8 @@ def main():
     if not run_command(f"{python_path} main.py", "Lighthouse Analysis"):
         return False
 
-    # Step 2: Generate text report
-    if not run_command(f"{python_path} generate_report.py", "Text Report Generation"):
-        return False
-
-    # Step 3: Generate HTML report
-    if not run_command(f"{python_path} generate_html_report.py", "HTML Report Generation"):
+    # Step 2: Generate enhanced HTML dashboard
+    if not run_command(f"{python_path} generate_enhanced_html_report.py", "Enhanced HTML Dashboard Generation"):
         return False
 
     # Summary
@@ -154,9 +156,11 @@ def main():
     print("🎉 WORKFLOW COMPLETED SUCCESSFULLY!")
     print("=" * 50)
     print("\n📂 Generated Files:")
-    print("   📊 pagespeed_results.csv     - Raw data (Excel compatible)")
-    print("   📋 Console output above      - Summary report")
-    print("   🌐 pagespeed_report.html     - Interactive dashboard")
+    print("   📊 pagespeed_results.csv     - Clean core metrics and scores")
+    print("   🎯 lighthouse_opportunities.csv - Performance optimization details")
+    print("   ♿ lighthouse_accessibility.csv - Accessibility improvements")
+    print("   🔍 lighthouse_seo_details.csv - SEO audit insights")
+    print("   � pagespeed_report.html     - Enhanced tabbed dashboard")
 
     # Offer to open HTML report
     response = input("\n🌐 Open HTML report in browser? (y/n): ").lower().strip()
@@ -166,10 +170,12 @@ def main():
         print("✅ HTML report opened in browser")
 
     print("\n💡 Next Steps:")
-    print("   • Review the HTML dashboard for visual insights")
-    print("   • Import CSV into Excel/Google Sheets for further analysis")
-    print("   • Focus on URLs with performance scores < 90")
-    print("   • Re-run analysis after optimizations")
+    print("   • Review the enhanced tabbed dashboard for visual insights")
+    print("   • Check optimization opportunities for performance improvements")
+    print("   • Review accessibility recommendations for better UX")
+    print("   • Import CSV data into Excel/Google Sheets for further analysis")
+    print("   • Focus on URLs with Core Web Vitals issues")
+    print("   • Re-run analysis after implementing optimizations")
 
     return True
 

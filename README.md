@@ -4,12 +4,16 @@ A comprehensive Python automation tool that analyzes website performance using G
 
 ## 📋 Features
 
+- ✅ **🆕 Tabbed Dashboard Interface** - Modern three-tab layout (Performance, Opportunities, Accessibility)
+- ✅ **🧹 Clean CSV Structure** - Main CSV contains only core data, detailed insights in separate files
 - ✅ **Automated PageSpeed Analysis** - Tests multiple URLs automatically
 - ✅ **Mobile & Desktop Scores** - Captures both device types
-- ✅ **Core Web Vitals** - Extracts detailed performance metrics with color coding
+- ✅ **Core Web Vitals Matrix** - Detailed performance metrics with color coding
 - ✅ **Visual Dashboard** - Color-coded HTML reports with Google performance thresholds
+- ✅ **🆕 Optimization Insights** - Actionable recommendations with impact prioritization
+- ✅ **♿ Accessibility Compliance** - WCAG issues with severity indicators
 - ✅ **Anti-Bot Protection** - Robust measures to avoid detection
-- ✅ **Multiple Report Formats** - CSV, color-coded HTML dashboard, and console reports
+- ✅ **Multiple Report Formats** - Clean CSV, detailed CSVs, enhanced HTML dashboard, console reports
 - ✅ **Batch Processing** - Analyze hundreds of URLs with configurable delays
 - ✅ **Smart URL Validation** - Validates URLs and handles malformed entries
 - ✅ **Cross-Platform** - Dynamic paths work on Windows, macOS, and Linux
@@ -54,6 +58,31 @@ The HTML dashboard uses Google's official Core Web Vitals thresholds for color c
 - **Cumulative Layout Shift**: >0.25
 - **Speed Index**: >5.8s
 
+## ⚡ Quick Start
+
+For experienced users who want to get started immediately:
+
+```bash
+# Clone the repository
+git clone https://github.com/manishsongirkar/lighthouse-automation-suite.git
+cd pagespeed-insights-automation
+
+# Run automated setup (recommended)
+chmod +x setup.sh
+./setup.sh
+
+# Add your URLs to analyze
+echo "https://example.com" >> urls.txt
+
+# Run the complete enhanced workflow (recommended)
+python run_analysis.py
+
+# View the results
+# Dashboard opens automatically in browser
+```
+
+Your comprehensive dashboard will be ready in minutes! For detailed setup and customization options, see the full setup instructions below.
+
 ## 🛠️ Setup Instructions
 
 ### Prerequisites
@@ -62,6 +91,27 @@ The HTML dashboard uses Google's official Core Web Vitals thresholds for color c
 - Internet connection
 
 ### Installation
+
+#### Option 1: Automated Setup (Recommended) 🚀
+```bash
+# 1. Clone or download this project
+git clone https://github.com/manishsongirkar/lighthouse-automation-suite.git
+cd lighthouse-automation-suite
+
+# 2. Run the automated setup script
+chmod +x setup.sh
+./setup.sh
+```
+
+The setup script will automatically:
+- ✅ Check Python 3.7+ installation
+- ✅ Create virtual environment (.venv/)
+- ✅ Install all required dependencies
+- ✅ Create sample `urls.txt` file
+- ✅ Verify Google Chrome installation
+- ✅ Test all modules for proper installation
+
+#### Option 2: Manual Setup
 
 1. **Clone or download this project**
 ```bash
@@ -90,48 +140,67 @@ https://www.competitor.com
 
 ## 🚀 Usage
 
-### Option 1: Run Complete Analysis Workflow
+### Option 1: Run Complete Enhanced Workflow (Recommended)
 ```bash
 python run_analysis.py
 ```
-This runs the full workflow: analysis → reports → opens dashboard
+This runs the full enhanced workflow:
+- 🧹 **Automatic cleanup** of old report files
+- 📊 **Lighthouse analysis** with comprehensive metrics
+- 🎨 **Enhanced tabbed dashboard** generation
+- 🌐 **Auto-opens** the dashboard in your browser
 
-### Option 2: Run Individual Components
+### Option 2: Generate Enhanced HTML Dashboard
+```bash
+python generate_enhanced_html_report.py
+```
+Creates the modern tabbed interface with optimization insights
+
+### Option 3: Run Individual Components
 
 **Just the PageSpeed analysis:**
 ```bash
 python main.py
 ```
 
-**Generate text summary report:**
+**For advanced usage, run individual steps:**
+
+**Lighthouse analysis only:**
 ```bash
-python generate_report.py
+python main.py
 ```
 
-**Generate HTML dashboard:**
+**Enhanced HTML dashboard only (after analysis):**
 ```bash
-python generate_html_report.py
+python generate_enhanced_html_report.py
 ```
 
 ## 📊 Output Files
 
-### 1. `pagespeed_results.csv`
-- Raw data in CSV format
-- Import into Excel/Google Sheets
-- Contains all scores and metrics
-- Machine-readable for further analysis
+### 1. `pagespeed_results.csv` - Clean Main Data
+- **Core performance metrics only** - No cluttered internal fields
+- **Excel/Google Sheets ready** - Direct import without cleanup
+- Contains all scores and Core Web Vitals metrics
+- **Backward compatible** - Same format as before for existing workflows
 
-### 2. `pagespeed_report.html`
-- Interactive web dashboard with **color-coded performance indicators**
-- **Visual score representations** with Google performance thresholds
-- **Green/Orange/Red color coding** for Core Web Vitals
-- Mobile and desktop results side-by-side
-- Summary cards with average metrics
-- Professional styling and responsive design
+### 2. `pagespeed_report.html` - Enhanced Tabbed Dashboard
+- **🆕 Modern tabbed interface** with three distinct sections:
+  - **📊 Performance Overview**: Scores + Core Web Vitals matrix
+  - **🚀 Optimization Opportunities**: Actionable recommendations with impact levels
+  - **♿ Accessibility Issues**: WCAG compliance issues with severity indicators
+- **Color-coded performance indicators** with Google thresholds
+- **4-column max grid layout** for better organization
+- **Responsive design** - Works perfectly on all devices
+- **Professional styling** with improved hover states
 
-### 3. Console Reports
-- Summary statistics
-- Performance issue alerts
+### 3. Detailed Insight Files (NEW)
+- **`lighthouse_opportunities.csv`** - Performance optimization recommendations
+- **`lighthouse_accessibility.csv`** - Accessibility issues and fixes
+- **`lighthouse_seo_details.csv`** - SEO audit comprehensive results
+
+### 4. Console Reports
+- Summary statistics with Core Web Vitals
+- Performance issue alerts with color indicators
 - Average scores across all URLs
 - Actionable recommendations
 
@@ -219,8 +288,20 @@ Toggle browser visibility in `main.py`:
 
 **Missing Dependencies:**
 ```bash
+# Manual installation
 pip install selenium webdriver-manager fake-useragent pandas
+
+# Or re-run the automated setup script
+./setup.sh
 ```
+
+**Setup Issues:**
+If you encounter any setup problems, try running the automated setup script:
+```bash
+chmod +x setup.sh
+./setup.sh
+```
+This will verify your environment and reinstall all dependencies.
 
 ## 📋 Best Practices
 
@@ -248,19 +329,21 @@ pip install selenium webdriver-manager fake-useragent pandas
 
 ```
 lighthouse-automation-suite/
-├── main.py                    # Core automation script
-├── urls.txt                   # URLs to analyze (supports comments)
-├── generate_report.py         # Text report generator with Core Web Vitals
-├── generate_html_report.py    # Color-coded HTML dashboard generator
-├── run_analysis.py           # Complete workflow runner
-├── requirements.txt          # Python dependencies
-├── packages.txt             # System dependencies
-├── README.md                # Project documentation
-├── SETUP.md                 # Detailed setup instructions
-├── CORE_WEB_VITALS_UPDATE.md # Feature update documentation
-├── .gitignore              # Git ignore rules
-├── pagespeed_results.csv   # Generated results (gitignored)
-└── pagespeed_report.html   # Generated color-coded dashboard (gitignored)
+├── main.py                         # Core automation script with clean CSV output
+├── urls.txt                        # URLs to analyze (supports comments)
+├── setup.sh                        # 🚀 Automated setup script (recommended)
+├── generate_enhanced_html_report.py # 🆕 Enhanced tabbed dashboard generator
+├── run_analysis.py                 # 🚀 Complete workflow runner (recommended)
+├── requirements.txt                # Python dependencies
+├── packages.txt                    # System dependencies
+├── README.md                       # Project documentation
+├── CORE_WEB_VITALS_UPDATE.md      # Latest feature updates (October 2025)
+├── .gitignore                      # Git ignore rules
+├── pagespeed_results.csv           # 🧹 Clean main results (gitignored)
+├── lighthouse_opportunities.csv    # 🆕 Performance optimization details (gitignored)
+├── lighthouse_accessibility.csv    # 🆕 Accessibility issues and fixes (gitignored)
+├── lighthouse_seo_details.csv      # 🆕 SEO audit comprehensive results (gitignored)
+└── pagespeed_report.html           # 🎨 Enhanced tabbed dashboard (gitignored)
 ```
 
 ## 🤝 Contributing
@@ -296,6 +379,14 @@ If you encounter issues:
 
 ## 🆕 Latest Updates
 
+### October 16, 2025 - Enhanced Dashboard & Clean Data Structure
+- ✅ **🆕 Tabbed interface** with Performance Overview, Optimization Opportunities, and Accessibility Issues
+- ✅ **🧹 Clean CSV structure** - Main CSV no longer contains internal fields
+- ✅ **📋 Separate detail files** - Dedicated CSV files for optimization, accessibility, and SEO insights
+- ✅ **🎨 Enhanced UI/UX** - Fixed tab hover states, 4-column grid layout, professional styling
+- ✅ **📊 Core Web Vitals matrix** - Detailed performance metrics in Performance Overview tab
+- ✅ **🔄 Backward compatibility** - Existing `pagespeed_results.csv` workflows unchanged
+
 ### October 2025 - Color-Coded Core Web Vitals
 - ✅ **Color-coded HTML dashboard** with Google performance thresholds
 - ✅ **Green/Orange/Red indicators** for instant performance identification
@@ -303,7 +394,7 @@ If you encounter issues:
 - ✅ **Enhanced URL validation** with detailed reporting
 - ✅ **Cross-platform compatibility** with dynamic paths
 
-See `CORE_WEB_VITALS_UPDATE.md` for detailed information about the latest enhancements.
+See `CORE_WEB_VITALS_UPDATE.md` for detailed information about all enhancements.
 
 ---
 
