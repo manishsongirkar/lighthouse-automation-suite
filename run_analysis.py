@@ -13,10 +13,7 @@ def cleanup_existing_files():
     """Clean up existing result files before starting new analysis"""
     files_to_cleanup = [
         "pagespeed_results.csv",
-        "pagespeed_report.html",
-        "lighthouse_opportunities.csv",
-        "lighthouse_accessibility.csv",
-        "lighthouse_seo_details.csv"
+        "pagespeed_report.html"
     ]
     cleaned_files = []
 
@@ -147,8 +144,8 @@ def main():
     if not run_command(f"{python_path} main.py", "Lighthouse Analysis"):
         return False
 
-    # Step 2: Generate enhanced HTML dashboard
-    if not run_command(f"{python_path} generate_enhanced_html_report.py", "Enhanced HTML Dashboard Generation"):
+    # Step 2: Generate HTML dashboard
+    if not run_command(f"{python_path} generate_html_report.py", "HTML Dashboard Generation"):
         return False
 
     # Summary
@@ -156,11 +153,8 @@ def main():
     print("🎉 WORKFLOW COMPLETED SUCCESSFULLY!")
     print("=" * 50)
     print("\n📂 Generated Files:")
-    print("   📊 pagespeed_results.csv     - Clean core metrics and scores")
-    print("   🎯 lighthouse_opportunities.csv - Performance optimization details")
-    print("   ♿ lighthouse_accessibility.csv - Accessibility improvements")
-    print("   🔍 lighthouse_seo_details.csv - SEO audit insights")
-    print("   � pagespeed_report.html     - Enhanced tabbed dashboard")
+    print("   📊 pagespeed_results.csv     - Core performance metrics and scores")
+    print("   🎯 pagespeed_report.html     - Performance dashboard")
 
     # Offer to open HTML report
     response = input("\n🌐 Open HTML report in browser? (y/n): ").lower().strip()
@@ -170,9 +164,7 @@ def main():
         print("✅ HTML report opened in browser")
 
     print("\n💡 Next Steps:")
-    print("   • Review the enhanced tabbed dashboard for visual insights")
-    print("   • Check optimization opportunities for performance improvements")
-    print("   • Review accessibility recommendations for better UX")
+    print("   • Review the performance dashboard for visual insights")
     print("   • Import CSV data into Excel/Google Sheets for further analysis")
     print("   • Focus on URLs with Core Web Vitals issues")
     print("   • Re-run analysis after implementing optimizations")

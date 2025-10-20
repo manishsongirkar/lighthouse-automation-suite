@@ -1,10 +1,8 @@
 pagespeed_results.csv
 pagespeed_report.html
-lighthouse_opportunities.csv
-lighthouse_accessibility.csv
-lighthouse_seo_details.csv
 env
 .venv
+.venv-1
 __pycache__
 
 # Backup and temporary files

@@ -119,30 +119,12 @@ def get_pagespeed_results(url_to_test, current_index=1, total_urls=1):
         # Create result dictionary
         result = {"url": url_to_test, "final_url": final_url}
 
-        # Lists to collect additional insights
-        all_opportunities = []
-        all_accessibility_issues = []
-        all_seo_details = []
-
         # Extract mobile data
         mobile_json = driver.execute_script("return window.__LIGHTHOUSE_MOBILE_JSON__;")
         if mobile_json:
             print("📱 Extracting mobile scores and metrics...")
             mobile_data = extract_lighthouse_data(mobile_json, "mobile")
             result.update(mobile_data)
-
-            # Extract additional mobile insights
-            mobile_opportunities = extract_performance_opportunities(mobile_json, "mobile", url_to_test)
-            mobile_accessibility = extract_accessibility_issues(mobile_json, "mobile", url_to_test)
-            mobile_seo = extract_seo_details(mobile_json, "mobile", url_to_test)
-
-            all_opportunities.extend(mobile_opportunities)
-            all_accessibility_issues.extend(mobile_accessibility)
-            all_seo_details.extend(mobile_seo)
-
-            print(f"  📊 Found {len(mobile_opportunities)} mobile optimization opportunities")
-            print(f"  ♿ Found {len(mobile_accessibility)} mobile accessibility issues")
-            print(f"  🔍 Found {len(mobile_seo)} mobile SEO details")
         else:
             print("⚠️  Mobile JSON data not available")
 
@@ -152,26 +134,8 @@ def get_pagespeed_results(url_to_test, current_index=1, total_urls=1):
             print("💻 Extracting desktop scores and metrics...")
             desktop_data = extract_lighthouse_data(desktop_json, "desktop")
             result.update(desktop_data)
-
-            # Extract additional desktop insights
-            desktop_opportunities = extract_performance_opportunities(desktop_json, "desktop", url_to_test)
-            desktop_accessibility = extract_accessibility_issues(desktop_json, "desktop", url_to_test)
-            desktop_seo = extract_seo_details(desktop_json, "desktop", url_to_test)
-
-            all_opportunities.extend(desktop_opportunities)
-            all_accessibility_issues.extend(desktop_accessibility)
-            all_seo_details.extend(desktop_seo)
-
-            print(f"  📊 Found {len(desktop_opportunities)} desktop optimization opportunities")
-            print(f"  ♿ Found {len(desktop_accessibility)} desktop accessibility issues")
-            print(f"  🔍 Found {len(desktop_seo)} desktop SEO details")
         else:
             print("⚠️  Desktop JSON data not available")
-
-        # Store additional insights in result for potential use
-        result['_opportunities'] = all_opportunities
-        result['_accessibility_issues'] = all_accessibility_issues
-        result['_seo_details'] = all_seo_details
 
         return result
 
@@ -254,159 +218,6 @@ def extract_lighthouse_data(lighthouse_json, device_type):
 
     return data
 
-
-def extract_performance_opportunities(lighthouse_json, device_type, url):
-    """
-    Extract performance optimization opportunities from Lighthouse JSON.
-    Args:
-        lighthouse_json: The Lighthouse JSON object
-        device_type: String indicating "mobile" or "desktop"
-        url: The URL being analyzed
-    Returns:
-        list: List of opportunity dictionaries
-    """
-    opportunities = []
-
-    try:
-        audits = lighthouse_json.get('audits', {})
-
-        # Key performance opportunity audits
-        opportunity_audits = {
-            'uses-optimized-images': 'Optimize images',
-            'modern-image-formats': 'Use modern image formats',
-            'unused-css-rules': 'Remove unused CSS',
-            'render-blocking-resources': 'Eliminate render-blocking resources',
-            'uses-text-compression': 'Enable text compression',
-            'efficient-animated-content': 'Use efficient animated content',
-            'uses-responsive-images': 'Use appropriately sized images',
-            'offscreen-images': 'Defer offscreen images',
-            'unminified-css': 'Minify CSS',
-            'unminified-javascript': 'Minify JavaScript',
-            'uses-http2': 'Use HTTP/2',
-            'font-display': 'Ensure text remains visible during webfont load'
-        }
-
-        for audit_key, description in opportunity_audits.items():
-            audit = audits.get(audit_key, {})
-            if audit and audit.get('score') is not None and audit.get('score') < 1:
-                potential_savings = audit.get('details', {}).get('overallSavingsMs', 0)
-                if potential_savings > 0:
-                    opportunities.append({
-                        'url': url,
-                        'device_type': device_type,
-                        'audit_id': audit_key,
-                        'title': audit.get('title', description),
-                        'description': audit.get('description', ''),
-                        'score': audit.get('score', 0),
-                        'potential_savings_ms': potential_savings,
-                        'potential_savings_s': f"{potential_savings/1000:.2f}",
-                        'impact': 'High' if potential_savings > 1000 else 'Medium' if potential_savings > 500 else 'Low'
-                    })
-
-    except Exception as e:
-        print(f"Error extracting opportunities for {device_type}: {e}")
-
-    return opportunities
-
-
-def extract_accessibility_issues(lighthouse_json, device_type, url):
-    """
-    Extract accessibility issues from Lighthouse JSON.
-    Args:
-        lighthouse_json: The Lighthouse JSON object
-        device_type: String indicating "mobile" or "desktop"
-        url: The URL being analyzed
-    Returns:
-        list: List of accessibility issue dictionaries
-    """
-    issues = []
-
-    try:
-        audits = lighthouse_json.get('audits', {})
-
-        # Key accessibility audits
-        accessibility_audits = {
-            'color-contrast': 'Color contrast',
-            'image-alt': 'Image alt text',
-            'aria-labels': 'ARIA labels',
-            'heading-order': 'Heading order',
-            'link-name': 'Link names',
-            'button-name': 'Button names',
-            'form-field-multiple-labels': 'Form field labels',
-            'skip-link': 'Skip links',
-            'tabindex': 'Tab index usage',
-            'focus-traps': 'Focus traps'
-        }
-
-        for audit_key, description in accessibility_audits.items():
-            audit = audits.get(audit_key, {})
-            if audit and audit.get('score') is not None and audit.get('score') < 1:
-                severity = 'Critical' if audit.get('score') == 0 else 'Warning'
-                issues.append({
-                    'url': url,
-                    'device_type': device_type,
-                    'audit_id': audit_key,
-                    'title': audit.get('title', description),
-                    'description': audit.get('description', ''),
-                    'score': audit.get('score', 0),
-                    'severity': severity,
-                    'impact': audit.get('details', {}).get('type', 'Unknown')
-                })
-
-    except Exception as e:
-        print(f"Error extracting accessibility issues for {device_type}: {e}")
-
-    return issues
-
-
-def extract_seo_details(lighthouse_json, device_type, url):
-    """
-    Extract SEO details from Lighthouse JSON.
-    Args:
-        lighthouse_json: The Lighthouse JSON object
-        device_type: String indicating "mobile" or "desktop"
-        url: The URL being analyzed
-    Returns:
-        list: List of SEO issue dictionaries
-    """
-    seo_details = []
-
-    try:
-        audits = lighthouse_json.get('audits', {})
-
-        # Key SEO audits
-        seo_audits = {
-            'meta-description': 'Meta description',
-            'document-title': 'Document title',
-            'structured-data': 'Structured data',
-            'robots-txt': 'Robots.txt',
-            'canonical': 'Canonical links',
-            'hreflang': 'Hreflang',
-            'is-crawlable': 'Page is crawlable',
-            'font-size': 'Font size',
-            'tap-targets': 'Tap targets'
-        }
-
-        for audit_key, description in seo_audits.items():
-            audit = audits.get(audit_key, {})
-            if audit:
-                status = 'Pass' if audit.get('score', 0) == 1 else 'Fail' if audit.get('score', 0) == 0 else 'Warning'
-                seo_details.append({
-                    'url': url,
-                    'device_type': device_type,
-                    'audit_id': audit_key,
-                    'title': audit.get('title', description),
-                    'description': audit.get('description', ''),
-                    'score': audit.get('score', 0),
-                    'status': status,
-                    'displayValue': audit.get('displayValue', '')
-                })
-
-    except Exception as e:
-        print(f"Error extracting SEO details for {device_type}: {e}")
-
-    return seo_details
-
 def write_to_csv(data, filename="pagespeed_results.csv"):
     """
     Writes a dictionary of results to a CSV file with structured columns.
@@ -481,100 +292,8 @@ def write_to_csv(data, filename="pagespeed_results.csv"):
     print(f"Results for {clean_data.get('url', 'N/A')} successfully written to {filename}")
 
 
-def write_opportunities_to_csv(opportunities, filename="lighthouse_opportunities.csv"):
-    """
-    Writes performance opportunities to a separate CSV file.
-    Args:
-        opportunities (list): List of opportunity dictionaries.
-        filename (str): The name of the CSV file to write to.
-    """
-    if not opportunities:
-        return
-
-    fieldnames = [
-        "url", "device_type", "audit_id", "title", "description",
-        "score", "potential_savings_ms", "potential_savings_s", "impact"
-    ]
-
-    # Check if file exists
-    try:
-        with open(filename, "r", newline="") as f:
-            file_exists = True
-    except FileNotFoundError:
-        file_exists = False
-
-    # Write data
-    with open(filename, "a", newline="", encoding="utf-8") as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        if not file_exists:
-            writer.writeheader()
-            print(f"Created opportunities CSV: {filename}")
-        for opportunity in opportunities:
-            writer.writerow(opportunity)
 
 
-def write_accessibility_to_csv(issues, filename="lighthouse_accessibility.csv"):
-    """
-    Writes accessibility issues to a separate CSV file.
-    Args:
-        issues (list): List of accessibility issue dictionaries.
-        filename (str): The name of the CSV file to write to.
-    """
-    if not issues:
-        return
-
-    fieldnames = [
-        "url", "device_type", "audit_id", "title", "description",
-        "score", "severity", "impact"
-    ]
-
-    # Check if file exists
-    try:
-        with open(filename, "r", newline="") as f:
-            file_exists = True
-    except FileNotFoundError:
-        file_exists = False
-
-    # Write data
-    with open(filename, "a", newline="", encoding="utf-8") as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        if not file_exists:
-            writer.writeheader()
-            print(f"Created accessibility CSV: {filename}")
-        for issue in issues:
-            writer.writerow(issue)
-
-
-def write_seo_to_csv(seo_details, filename="lighthouse_seo_details.csv"):
-    """
-    Writes SEO details to a separate CSV file.
-    Args:
-        seo_details (list): List of SEO detail dictionaries.
-        filename (str): The name of the CSV file to write to.
-    """
-    if not seo_details:
-        return
-
-    fieldnames = [
-        "url", "device_type", "audit_id", "title", "description",
-        "score", "status", "displayValue"
-    ]
-
-    # Check if file exists
-    try:
-        with open(filename, "r", newline="") as f:
-            file_exists = True
-    except FileNotFoundError:
-        file_exists = False
-
-    # Write data
-    with open(filename, "a", newline="", encoding="utf-8") as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-        if not file_exists:
-            writer.writeheader()
-            print(f"Created SEO details CSV: {filename}")
-        for detail in seo_details:
-            writer.writerow(detail)
 
 def read_urls_from_file(filename="urls.txt"):
     """
@@ -644,17 +363,8 @@ if __name__ == "__main__":
         page_speed_scores = get_pagespeed_results(url, i, len(test_urls))
         # Write the results to a CSV file
         if page_speed_scores:
-            # Write main scores (existing format)
+            # Write main scores
             write_to_csv(page_speed_scores)
-
-            # Write additional insights to separate CSV files
-            if '_opportunities' in page_speed_scores:
-                write_opportunities_to_csv(page_speed_scores['_opportunities'])
-            if '_accessibility_issues' in page_speed_scores:
-                write_accessibility_to_csv(page_speed_scores['_accessibility_issues'])
-            if '_seo_details' in page_speed_scores:
-                write_seo_to_csv(page_speed_scores['_seo_details'])
-
             print(f"✅ Successfully processed: {url}")
         else:
             print(f"❌ Failed to process: {url}")
@@ -667,7 +377,4 @@ if __name__ == "__main__":
     print("\n" + "=" * 60)
     print("🎉 All tests completed!")
     print("📊 Generated files:")
-    print("  • pagespeed_results.csv - Main scores and metrics")
-    print("  • lighthouse_opportunities.csv - Performance optimization opportunities")
-    print("  • lighthouse_accessibility.csv - Accessibility issues and recommendations")
-    print("  • lighthouse_seo_details.csv - SEO audit details")
+    print("  • pagespeed_results.csv - Core performance metrics and scores")

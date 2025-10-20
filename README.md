@@ -4,20 +4,17 @@ A comprehensive Python automation tool that analyzes website performance using G
 
 ## 📋 Features
 
-- ✅ **🆕 Tabbed Dashboard Interface** - Modern three-tab layout (Performance, Opportunities, Accessibility)
-- ✅ **🧹 Clean CSV Structure** - Main CSV contains only core data, detailed insights in separate files
-- ✅ **Automated PageSpeed Analysis** - Tests multiple URLs automatically
+- ✅ **📊 Simple Performance Dashboard** - Clean, focused performance overview
+- ✅ **🧹 Clean CSV Structure** - CSV contains Core Web Vitals data
 - ✅ **Mobile & Desktop Scores** - Captures both device types
-- ✅ **Core Web Vitals Matrix** - Detailed performance metrics with color coding
-- ✅ **Visual Dashboard** - Color-coded HTML reports with Google performance thresholds
-- ✅ **🆕 Optimization Insights** - Actionable recommendations with impact prioritization
-- ✅ **♿ Accessibility Compliance** - WCAG issues with severity indicators
-- ✅ **Anti-Bot Protection** - Robust measures to avoid detection
-- ✅ **Multiple Report Formats** - Clean CSV, detailed CSVs, enhanced HTML dashboard, console reports
+- ✅ **Automated PageSpeed Analysis** - Tests multiple URLs automatically
+- ✅ **🧹 Streamlined architecture** - Essential metrics without complexity
+- ✅ **🎨 Professional UI/UX** - Single-focus design with Core Web Vitals
 - ✅ **Batch Processing** - Analyze hundreds of URLs with configurable delays
 - ✅ **Smart URL Validation** - Validates URLs and handles malformed entries
 - ✅ **Cross-Platform** - Dynamic paths work on Windows, macOS, and Linux
-- ✅ **Error Handling** - Graceful failure recovery and detailed logging
+- ✅ **📊 Core Web Vitals matrix** - Detailed performance metrics with color coding
+- ✅ **🔄 Clean CSV output** - Essential performance data only
 
 ## 📊 What It Measures
 
@@ -150,11 +147,11 @@ This runs the full enhanced workflow:
 - 🎨 **Enhanced tabbed dashboard** generation
 - 🌐 **Auto-opens** the dashboard in your browser
 
-### Option 2: Generate Enhanced HTML Dashboard
+### Option 2: Generate HTML Dashboard
 ```bash
-python generate_enhanced_html_report.py
+python generate_html_report.py
 ```
-Creates the modern tabbed interface with optimization insights
+Creates the performance dashboard with optimization insights
 
 ### Option 3: Run Individual Components
 
@@ -163,9 +160,9 @@ Creates the modern tabbed interface with optimization insights
 python main.py
 ```
 
-**Enhanced HTML dashboard only (after analysis):**
+**HTML dashboard only (after analysis):**
 ```bash
-python generate_enhanced_html_report.py
+python generate_html_report.py
 ```
 
 ## 📊 Output Files
@@ -176,22 +173,13 @@ python generate_enhanced_html_report.py
 - Contains all scores and Core Web Vitals metrics
 - **Backward compatible** - Same format as before for existing workflows
 
-### 2. `pagespeed_report.html` - Enhanced Tabbed Dashboard
-- **🆕 Modern tabbed interface** with three distinct sections:
-  - **📊 Performance Overview**: Scores + Core Web Vitals matrix
-  - **🚀 Optimization Opportunities**: Actionable recommendations with impact levels
-  - **♿ Accessibility Issues**: WCAG compliance issues with severity indicators
+### 2. `pagespeed_report.html` - Performance Dashboard
+- **📊 Clean performance overview** with Core Web Vitals matrix
 - **Color-coded performance indicators** with Google thresholds
-- **4-column max grid layout** for better organization
 - **Responsive design** - Works perfectly on all devices
-- **Professional styling** with improved hover states
+- **Professional styling** focused on essential metrics
 
-### 3. Detailed Insight Files (NEW)
-- **`lighthouse_opportunities.csv`** - Performance optimization recommendations
-- **`lighthouse_accessibility.csv`** - Accessibility issues and fixes
-- **`lighthouse_seo_details.csv`** - SEO audit comprehensive results
-
-### 4. Console Reports
+### 3. Console Reports
 - Summary statistics with Core Web Vitals
 - Performance issue alerts with color indicators
 - Average scores across all URLs
@@ -325,18 +313,15 @@ lighthouse-automation-suite/
 ├── main.py                         # Core automation script with clean CSV output
 ├── urls.txt                        # URLs to analyze (supports comments)
 ├── setup.sh                        # 🚀 Automated setup script (recommended)
-├── generate_enhanced_html_report.py # 🆕 Enhanced tabbed dashboard generator
+├── generate_html_report.py          # 📊 Performance dashboard generator
 ├── run_analysis.py                 # 🚀 Complete workflow runner (recommended)
 ├── requirements.txt                # Python dependencies
 ├── packages.txt                    # System dependencies
 ├── README.md                       # Project documentation
 ├── CORE_WEB_VITALS_UPDATE.md      # Latest feature updates (October 2025)
 ├── .gitignore                      # Git ignore rules
-├── pagespeed_results.csv           # 🧹 Clean main results (gitignored)
-├── lighthouse_opportunities.csv    # 🆕 Performance optimization details (gitignored)
-├── lighthouse_accessibility.csv    # 🆕 Accessibility issues and fixes (gitignored)
-├── lighthouse_seo_details.csv      # 🆕 SEO audit comprehensive results (gitignored)
-└── pagespeed_report.html           # 🎨 Enhanced tabbed dashboard (gitignored)
+├── pagespeed_results.csv           # 📊 Performance results (gitignored)
+└── pagespeed_report.html           # 🎨 Performance dashboard (gitignored)
 ```
 
 ## 🤝 Contributing
