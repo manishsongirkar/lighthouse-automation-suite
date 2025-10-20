@@ -192,7 +192,125 @@ def generate_html_report(csv_file="pagespeed_results.csv", html_file="pagespeed_
                 border-bottom: none;
             }
 
-            /* Score badges - PageSpeed style */
+            /* Circular Progress Indicators - PageSpeed Style */
+            .circle-progress {
+                position: relative;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 48px;
+                height: 48px;
+                margin: 0 auto;
+            }
+
+            .circle-progress svg {
+                transform: rotate(-90deg);
+                width: 48px;
+                height: 48px;
+            }
+
+            .circle-progress .circle-bg {
+                fill: none;
+                stroke: var(--psi-gray-200);
+                stroke-width: 4;
+            }
+
+            .circle-progress .circle-progress-bar {
+                fill: none;
+                stroke-width: 4;
+                stroke-linecap: round;
+                transition: stroke-dasharray 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+                stroke-dasharray: 0 125.6; /* Initial state - empty circle */
+                /* Animation will be added dynamically via JavaScript */
+            }
+
+            @keyframes circleReveal {
+                0% {
+                    stroke-dasharray: 0 125.6;
+                    opacity: 0.6;
+                }
+                50% {
+                    opacity: 1;
+                }
+                100% {
+                    stroke-dasharray: var(--target-progress, 0) var(--target-remaining, 125.6);
+                    opacity: 1;
+                }
+            }
+
+            /* Smooth fade-in animation for the entire circle */
+            .circle-progress {
+                /* Animation will be added dynamically via JavaScript */
+                opacity: 0;
+                transform: scale(0.8);
+            }
+
+            /* Active state when animation should start */
+            .circle-progress.animate {
+                animation: fadeInScale 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+                animation-delay: var(--animation-delay, 0s);
+            }
+
+            .circle-progress.animate .circle-progress-bar {
+                animation: circleReveal 1.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+                animation-delay: var(--animation-delay, 0s);
+            }
+
+            .circle-progress.animate .circle-text {
+                animation: textCountUp 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+                animation-delay: calc(var(--animation-delay, 0s) + 0.3s);
+            }
+
+            @keyframes fadeInScale {
+                0% {
+                    opacity: 0;
+                    transform: scale(0.8);
+                }
+                100% {
+                    opacity: 1;
+                    transform: scale(1);
+                }
+            }
+
+            /* Text animation */
+            .circle-progress .circle-text {
+                opacity: 0;
+            }
+
+            @keyframes textCountUp {
+                0% {
+                    opacity: 0;
+                    transform: translate(-50%, -50%) scale(0.5);
+                }
+                100% {
+                    opacity: 1;
+                    transform: translate(-50%, -50%) scale(1);
+                }
+            }
+
+            .circle-progress .circle-text {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                font-size: 12px;
+                font-weight: 500;
+                font-family: 'Google Sans', sans-serif;
+            }
+
+            .circle-progress.good .circle-progress-bar { stroke: var(--psi-green); }
+            .circle-progress.good .circle-text { color: var(--psi-green); }
+
+            .circle-progress.average .circle-progress-bar { stroke: var(--psi-orange); }
+            .circle-progress.average .circle-text { color: var(--psi-orange); }
+
+            .circle-progress.poor .circle-progress-bar { stroke: var(--psi-red); }
+            .circle-progress.poor .circle-text { color: var(--psi-red); }
+
+            .circle-progress.na .circle-progress-bar { stroke: var(--psi-gray-200); }
+            .circle-progress.na .circle-text { color: var(--psi-gray-600); }
+
+            /* Score badges - PageSpeed style (fallback for Core Web Vitals) */
             .score {
                 padding: 4px 12px;
                 border-radius: 16px;
@@ -208,6 +326,25 @@ def generate_html_report(csv_file="pagespeed_results.csv", html_file="pagespeed_
             .score-good { background: var(--psi-green); }
             .score-average { background: var(--psi-orange); }
             .score-poor { background: var(--psi-red); }
+
+            /* Performance tables with circles */
+            .performance-cell {
+                text-align: center;
+                padding: 16px 8px;
+            }
+
+            /* Section animation improvements */
+            [style*="margin-bottom: 64px"] {
+                opacity: 1;
+                transform: translateY(0);
+                transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+            }
+
+            /* Smooth section entry animation */
+            .section-animated {
+                opacity: 1;
+                transform: translateY(0);
+            }
 
             .url-cell {
                 max-width: 280px;
@@ -341,6 +478,173 @@ def generate_html_report(csv_file="pagespeed_results.csv", html_file="pagespeed_
             /* Google Fonts import */
             @import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500&family=Roboto:wght@300;400;500&display=swap');
         </style>
+
+        <script>
+            function createCircularProgress(score, size = 48) {
+                // Handle non-numeric or missing scores
+                if (!score || isNaN(score) || score === 'N/A') {
+                    return `
+                        <div class="circle-progress na">
+                            <svg>
+                                <circle class="circle-bg" cx="24" cy="24" r="20"></circle>
+                                <circle class="circle-progress-bar" cx="24" cy="24" r="20"></circle>
+                            </svg>
+                            <div class="circle-text">—</div>
+                        </div>
+                    `;
+                }
+
+                const numScore = parseInt(score);
+                const circumference = 2 * Math.PI * 20; // radius = 20
+                const strokeDasharray = (numScore / 100) * circumference;
+                const remainingDash = circumference - strokeDasharray;
+
+                let progressClass = 'poor';
+                if (numScore >= 90) {
+                    progressClass = 'good';
+                } else if (numScore >= 50) {
+                    progressClass = 'average';
+                }
+
+                return `
+                    <div class="circle-progress ${progressClass}">
+                        <svg>
+                            <circle class="circle-bg" cx="24" cy="24" r="20"></circle>
+                            <circle class="circle-progress-bar" cx="24" cy="24" r="20"></circle>
+                        </svg>
+                        <div class="circle-text">${numScore}</div>
+                    </div>
+                `;
+            }
+
+            // Enhanced animation controller for individual circle sections
+            function animateCirclesInSection(section, isInitial = false) {
+                const circles = section.querySelectorAll('.circle-progress:not(.animated)');
+
+                circles.forEach((circle, index) => {
+                    const progressBar = circle.querySelector('.circle-progress-bar');
+                    const textElement = circle.querySelector('.circle-text');
+
+                    // Get the actual score from data attribute
+                    const scoreFromData = circle.getAttribute('data-score');
+
+                    // Skip non-numeric scores or N/A cases (but allow legitimate 0 scores)
+                    if (!scoreFromData || scoreFromData === 'N/A' || isNaN(parseInt(scoreFromData))) {
+                        circle.classList.add('animated');
+                        // Still show the circle but without animation
+                        circle.style.opacity = '1';
+                        circle.style.transform = 'scale(1)';
+                        return;
+                    }
+
+                    // Check if it's an N/A case by looking at the text content
+                    const currentText = textElement.textContent;
+                    if (currentText === '—' || currentText === 'N/A') {
+                        circle.classList.add('animated');
+                        // Still show the circle but without animation
+                        circle.style.opacity = '1';
+                        circle.style.transform = 'scale(1)';
+                        return;
+                    }
+
+                    const score = parseInt(scoreFromData);
+                    const circumference = 2 * Math.PI * 20;
+                    const strokeDasharray = (score / 100) * circumference;
+                    const remainingDash = circumference - strokeDasharray;
+
+                    // Set CSS custom properties for animation
+                    circle.style.setProperty('--target-progress', strokeDasharray);
+                    circle.style.setProperty('--target-remaining', remainingDash);
+                    circle.style.setProperty('--animation-delay', `${index * 0.15}s`);
+
+                    // Mark as animated to prevent duplicate animations
+                    circle.classList.add('animated');
+
+                    // Trigger CSS animations by adding the animate class
+                    setTimeout(() => {
+                        circle.classList.add('animate');
+
+                        // Start number counting slightly after circle animation begins
+                        setTimeout(() => {
+                            animateCountUp(textElement, 0, score, 1000);
+                        }, 200);
+                    }, index * 150);
+                });
+            }
+
+            // Smooth number counting animation
+            function animateCountUp(element, start, end, duration) {
+                const startTime = performance.now();
+
+                function updateCount(currentTime) {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+
+                    // Use easing function for smooth animation
+                    const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+                    const currentValue = Math.floor(start + (end - start) * easeOutQuart);
+
+                    element.textContent = currentValue;
+
+                    if (progress < 1) {
+                        requestAnimationFrame(updateCount);
+                    } else {
+                        element.textContent = end;
+                    }
+                }
+
+                requestAnimationFrame(updateCount);
+            }
+
+            // Initialize animations when DOM loads
+            document.addEventListener('DOMContentLoaded', function() {
+                // Use Intersection Observer for performance-optimized animations
+                if ('IntersectionObserver' in window) {
+                    const observer = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting && !entry.target.classList.contains('section-animated')) {
+                                entry.target.classList.add('section-animated');
+                                // Trigger animations for this section
+                                setTimeout(() => {
+                                    animateCirclesInSection(entry.target);
+                                }, 100);
+                            }
+                        });
+                    }, {
+                        threshold: 0.3, // Trigger when 30% of the section is visible
+                        rootMargin: '50px 0px -50px 0px' // Start animation slightly before coming into view
+                    });
+
+                    // Observe all URL sections
+                    document.querySelectorAll('[style*="margin-bottom: 64px"]').forEach(section => {
+                        observer.observe(section);
+                    });
+
+                    // Animate the first section immediately if it's visible
+                    const firstSection = document.querySelector('[style*="margin-bottom: 64px"]');
+                    if (firstSection) {
+                        const rect = firstSection.getBoundingClientRect();
+                        if (rect.top < window.innerHeight) {
+                            setTimeout(() => {
+                                firstSection.classList.add('section-animated');
+                                animateCirclesInSection(firstSection, true);
+                            }, 200);
+                        }
+                    }
+                } else {
+                    // Fallback for browsers without IntersectionObserver
+                    setTimeout(() => {
+                        const allSections = document.querySelectorAll('[style*="margin-bottom: 64px"]');
+                        allSections.forEach((section, sectionIndex) => {
+                            setTimeout(() => {
+                                section.classList.add('section-animated');
+                                animateCirclesInSection(section);
+                            }, sectionIndex * 500);
+                        });
+                    }, 200);
+                }
+            });
+        </script>
         """
 
         # Calculate summary statistics
@@ -408,6 +712,58 @@ def generate_performance_tables(df):
             return 'score-average'
         else:
             return 'score-poor'
+
+    def create_circular_progress(score):
+        """Generate circular progress indicator HTML like PageSpeed Insights with smooth animations"""
+        # Handle non-numeric or missing scores
+        if pd.isna(score) or score == '' or score == 'N/A':
+            return '''
+                <div class="circle-progress na" data-score="0">
+                    <svg>
+                        <circle class="circle-bg" cx="24" cy="24" r="20"></circle>
+                        <circle class="circle-progress-bar" cx="24" cy="24" r="20"></circle>
+                    </svg>
+                    <div class="circle-text">—</div>
+                </div>
+            '''
+
+        try:
+            num_score = int(float(score))
+        except (ValueError, TypeError):
+            return '''
+                <div class="circle-progress na" data-score="0">
+                    <svg>
+                        <circle class="circle-bg" cx="24" cy="24" r="20"></circle>
+                        <circle class="circle-progress-bar" cx="24" cy="24" r="20"></circle>
+                    </svg>
+                    <div class="circle-text">—</div>
+                </div>
+            '''
+
+        # Ensure score is within valid range
+        num_score = max(0, min(100, num_score))
+
+        circumference = 2 * 3.14159 * 20  # radius = 20
+        stroke_dasharray = (num_score / 100) * circumference
+        remaining_dash = circumference - stroke_dasharray
+
+        progress_class = 'poor'
+        if num_score >= 90:
+            progress_class = 'good'
+        elif num_score >= 50:
+            progress_class = 'average'
+
+        return f'''
+            <div class="circle-progress {progress_class}"
+                 data-score="{num_score}"
+                 style="--target-progress: {stroke_dasharray}; --target-remaining: {remaining_dash};">
+                <svg>
+                    <circle class="circle-bg" cx="24" cy="24" r="20"></circle>
+                    <circle class="circle-progress-bar" cx="24" cy="24" r="20"></circle>
+                </svg>
+                <div class="circle-text">0</div>
+            </div>
+        '''
 
     def get_metric_class(metric_name, value_str):
         """Return CSS class based on Core Web Vitals thresholds"""
@@ -482,10 +838,10 @@ def generate_performance_tables(df):
                         </thead>
                         <tbody>
                             <tr>
-                                <td><span class="score {get_score_class(row.get('mobile_performance', 0))}">{row.get('mobile_performance', 'N/A')}</span></td>
-                                <td><span class="score {get_score_class(row.get('mobile_accessibility', 0))}">{row.get('mobile_accessibility', 'N/A')}</span></td>
-                                <td><span class="score {get_score_class(row.get('mobile_best_practices', 0))}">{row.get('mobile_best_practices', 'N/A')}</span></td>
-                                <td><span class="score {get_score_class(row.get('mobile_seo', 0))}">{row.get('mobile_seo', 'N/A')}</span></td>
+                                <td class="performance-cell">{create_circular_progress(row.get('mobile_performance', 'N/A'))}</td>
+                                <td class="performance-cell">{create_circular_progress(row.get('mobile_accessibility', 'N/A'))}</td>
+                                <td class="performance-cell">{create_circular_progress(row.get('mobile_best_practices', 'N/A'))}</td>
+                                <td class="performance-cell">{create_circular_progress(row.get('mobile_seo', 'N/A'))}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -504,10 +860,10 @@ def generate_performance_tables(df):
                         </thead>
                         <tbody>
                             <tr>
-                                <td><span class="score {get_score_class(row.get('desktop_performance', 0))}">{row.get('desktop_performance', 'N/A')}</span></td>
-                                <td><span class="score {get_score_class(row.get('desktop_accessibility', 0))}">{row.get('desktop_accessibility', 'N/A')}</span></td>
-                                <td><span class="score {get_score_class(row.get('desktop_best_practices', 0))}">{row.get('desktop_best_practices', 'N/A')}</span></td>
-                                <td><span class="score {get_score_class(row.get('desktop_seo', 0))}">{row.get('desktop_seo', 'N/A')}</span></td>
+                                <td class="performance-cell">{create_circular_progress(row.get('desktop_performance', 'N/A'))}</td>
+                                <td class="performance-cell">{create_circular_progress(row.get('desktop_accessibility', 'N/A'))}</td>
+                                <td class="performance-cell">{create_circular_progress(row.get('desktop_best_practices', 'N/A'))}</td>
+                                <td class="performance-cell">{create_circular_progress(row.get('desktop_seo', 'N/A'))}</td>
                             </tr>
                         </tbody>
                     </table>
