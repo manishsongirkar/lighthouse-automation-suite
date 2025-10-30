@@ -4,6 +4,8 @@ env
 .venv
 .venv-1
 __pycache__
+screenshots-*
+screenshots-*/*
 
 # Backup and temporary files
 *_backup.*

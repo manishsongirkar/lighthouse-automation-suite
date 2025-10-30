@@ -138,10 +138,22 @@ def main():
         print("💡 URLs must start with 'http://' or 'https://'")
         return False
 
-    print(f"\n🚀 Ready to analyze {len(valid_urls)} valid URLs")
+    # Ask user if they want Full HD screenshot capture
+    response = input("\n📸 Enable Full HD full-page screenshot capture? (Y/n): ").lower().strip()
+    enable_screenshots = response != 'n'
 
-    # Step 1: Run Lighthouse analysis
-    if not run_command(f"{python_path} main.py", "Lighthouse Analysis"):
+    # Step 1: Run optimized Lighthouse analysis (with integrated Full HD screenshot support)
+    analysis_command = f"{python_path} main.py"
+    if enable_screenshots:
+        # Pass 'Y' input to enable screenshots
+        analysis_command = f"echo 'Y' | {python_path} main.py"
+        print("📸 Using optimized script with Full HD screenshot capture")
+    else:
+        # Pass 'n' input to disable screenshots
+        analysis_command = f"echo 'n' | {python_path} main.py"
+        print("📊 Using optimized script without screenshots")
+
+    if not run_command(analysis_command, "Optimized Lighthouse Analysis with Full HD Screenshots" if enable_screenshots else "Optimized Lighthouse Analysis"):
         return False
 
     # Step 2: Generate HTML dashboard
@@ -156,6 +168,19 @@ def main():
     print("   📊 pagespeed_results.csv     - Core performance metrics and scores")
     print("   🎯 pagespeed_report.html     - Performance dashboard")
 
+    # Check for screenshot directory if screenshots were enabled
+    if enable_screenshots:
+        screenshot_dirs = [d for d in os.listdir('.') if d.startswith('screenshots-') and os.path.isdir(d)]
+        if screenshot_dirs:
+            # Get the most recent screenshot directory
+            screenshot_dir = sorted(screenshot_dirs)[-1]
+            screenshots = [f for f in os.listdir(screenshot_dir) if f.endswith('.png')]
+            if screenshots:
+                print(f"   📸 {screenshot_dir}/     - Full HD Screenshots ({len(screenshots)} files)")
+                fullhd_mobile_screenshots = [f for f in screenshots if f.startswith('fullhd_mobile_')]
+                fullhd_desktop_screenshots = [f for f in screenshots if f.startswith('fullhd_desktop_')]
+                print(f"       � Mobile: {len(fullhd_mobile_screenshots)} | 🖥️  Desktop: {len(fullhd_desktop_screenshots)}")
+
     # Offer to open HTML report
     response = input("\n🌐 Open HTML report in browser? (y/n): ").lower().strip()
     if response == 'y':
@@ -163,9 +188,25 @@ def main():
         webbrowser.open(f"file://{html_path}")
         print("✅ HTML report opened in browser")
 
-    print("\n💡 Next Steps:")
+    # Offer to open screenshot directory if screenshots were enabled
+    if enable_screenshots and screenshot_dirs:
+        response = input("\n📂 Open Full HD screenshot directory? (y/n): ").lower().strip()
+        if response == 'y':
+            screenshot_path = os.path.abspath(screenshot_dir)
+            if os.name == 'nt':  # Windows
+                os.startfile(screenshot_path)
+            elif os.name == 'posix':  # macOS/Linux
+                if sys.platform == 'darwin':  # macOS
+                    subprocess.run(['open', screenshot_path])
+                else:  # Linux
+                    subprocess.run(['xdg-open', screenshot_path])
+            print(f"✅ Screenshot directory opened: {screenshot_dir}")
+
+    print("\n�💡 Next Steps:")
     print("   • Review the performance dashboard for visual insights")
     print("   • Import CSV data into Excel/Google Sheets for further analysis")
+    if enable_screenshots:
+        print("   • Check Full HD screenshot files for complete page verification")
     print("   • Focus on URLs with Core Web Vitals issues")
     print("   • Re-run analysis after implementing optimizations")
 

@@ -2,6 +2,8 @@ import csv
 import time
 import random
 import json
+import os
+from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -9,14 +11,124 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
 from fake_useragent import UserAgent
-def get_pagespeed_results(url_to_test, current_index=1, total_urls=1):
+
+# Global screenshot directory to persist across all URLs in a session
+SCREENSHOT_DIR = None
+def initialize_screenshot_directory():
+    """Initialize a single screenshot directory for the entire session"""
+    global SCREENSHOT_DIR
+    if SCREENSHOT_DIR is None:
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        SCREENSHOT_DIR = f"screenshots-{timestamp}"
+
+        if not os.path.exists(SCREENSHOT_DIR):
+            os.makedirs(SCREENSHOT_DIR)
+            print(f"📁 Created screenshot directory: {SCREENSHOT_DIR}")
+
+    return SCREENSHOT_DIR
+
+def capture_full_hd_screenshots(driver, url, url_index, enable_screenshots=False):
+    """
+    Capture optimized Full HD full-page screenshots for both mobile and desktop views
+    Args:
+        driver: Selenium WebDriver instance
+        url: URL being tested
+        url_index: Index of the current URL
+        enable_screenshots: Whether to capture screenshots
+    """
+    if not enable_screenshots:
+        return
+
+    try:
+        screenshot_dir = initialize_screenshot_directory()
+        print("📸 Capturing Full HD screenshots for mobile and desktop...")
+
+        # Create safe filename from URL
+        safe_url = url.replace('https://', '').replace('http://', '').replace('/', '_').replace(':', '_')
+        if len(safe_url) > 50:
+            safe_url = safe_url[:50]
+
+        # Capture mobile view screenshot
+        capture_device_full_hd_screenshot(driver, "mobile", screenshot_dir, url_index, safe_url)
+
+        # Capture desktop view screenshot
+        capture_device_full_hd_screenshot(driver, "desktop", screenshot_dir, url_index, safe_url)
+
+    except Exception as e:
+        print(f"⚠️  Full HD screenshot capture failed for {url}: {e}")
+
+def capture_device_full_hd_screenshot(driver, device_type, screenshot_dir, url_index, safe_url):
+    """Capture Full HD screenshot for specific device view"""
+    try:
+        # Try to find and click the device tab
+        device_selectors = {
+            "mobile": ["[data-testid='device-mobile']", "button[aria-label*='Mobile']", "button[aria-label*='mobile']"],
+            "desktop": ["[data-testid='device-desktop']", "button[aria-label*='Desktop']", "button[aria-label*='desktop']"]
+        }
+
+        tab_found = False
+        for selector in device_selectors[device_type]:
+            try:
+                tab = WebDriverWait(driver, 3).until(
+                    EC.element_to_be_clickable((By.CSS_SELECTOR, selector))
+                )
+                tab.click()
+                tab_found = True
+                break
+            except:
+                continue
+
+        if not tab_found:
+            # Use JavaScript fallback to find device tabs
+            tab = driver.execute_script(f"""
+                const buttons = document.querySelectorAll('button, [role="tab"]');
+                for (let btn of buttons) {{
+                    const text = btn.textContent.toLowerCase();
+                    const label = btn.getAttribute('aria-label')?.toLowerCase() || '';
+                    if (text.includes('{device_type}') || label.includes('{device_type}')) {{
+                        return btn;
+                    }}
+                }}
+                return null;
+            """)
+            if tab:
+                driver.execute_script("arguments[0].click();", tab)
+                tab_found = True
+
+        if tab_found:
+            print(f"{'📱' if device_type == 'mobile' else '🖥️'} Switched to {device_type} view")
+            time.sleep(2)  # Wait for tab content to load
+        else:
+            print(f"⚠️  Could not find {device_type} tab, capturing current view")
+
+        # Get the total page height for full-page capture
+        total_height = driver.execute_script("return Math.max(document.body.scrollHeight, document.documentElement.scrollHeight)")
+
+        # Set Full HD window size and capture full page
+        driver.set_window_size(1920, max(1080, total_height))
+
+        # Brief wait for content to render at new size
+        time.sleep(1)
+
+        # Capture Full HD screenshot
+        filename = f"{screenshot_dir}/fullhd_{device_type}_{url_index:02d}_{safe_url}.png"
+        driver.save_screenshot(filename)
+        print(f"✅ Full HD {device_type} screenshot saved: {filename}")
+        return True
+
+    except Exception as e:
+        print(f"⚠️  Could not capture Full HD {device_type} screenshot: {e}")
+        return False
+
+def get_pagespeed_results(url_to_test, current_index=1, total_urls=1, enable_screenshots=False):
     """
     Gets Lighthouse scores by directly navigating to PageSpeed Insights analysis URL.
-    Extracts both mobile and desktop scores from JSON objects.
+    Extracts both mobile and desktop scores from JSON objects and optionally captures screenshots.
     Args:
         url_to_test (str): The URL to be tested by Lighthouse via PageSpeed Insights.
         current_index (int): Current URL index being processed.
         total_urls (int): Total number of URLs to process.
+        enable_screenshots (bool): Whether to capture screenshots.
     Returns:
         dict: A dictionary containing mobile scores, desktop scores, and final URL, or None if an error occurs.
     """
@@ -26,7 +138,7 @@ def get_pagespeed_results(url_to_test, current_index=1, total_urls=1):
     print(f"📊 Current URL: {url_to_test}")
     print("=" * 60)
 
-    # --- Setup Selenium WebDriver with anti-bot measures ---
+    # --- Setup Selenium WebDriver with optimized performance ---
     options = webdriver.ChromeOptions()
 
     # Use a random user agent to mimic a real browser
@@ -34,28 +146,23 @@ def get_pagespeed_results(url_to_test, current_index=1, total_urls=1):
     user_agent = ua.random
     options.add_argument(f"user-agent={user_agent}")
 
-    # Privacy and clean browser settings
-    options.add_argument("--incognito")  # Run in incognito/private mode
+    # Performance-optimized browser settings
+    options.add_argument("--headless")  # Run in headless mode for better performance
+    options.add_argument("--no-sandbox")  # Bypass OS security model
+    options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
+    options.add_argument("--disable-gpu")  # Disable GPU acceleration
     options.add_argument("--disable-extensions")  # Disable all extensions
     options.add_argument("--disable-plugins")  # Disable plugins
     options.add_argument("--disable-default-apps")  # Disable default apps
+    options.add_argument("--aggressive-cache-discard")  # More aggressive memory management
+    options.add_argument("--memory-pressure-off")  # Turn off memory pressure checks
 
-    # Anti-bot detection measures
+    # Anti-bot detection measures (minimal set for performance)
     options.add_argument("--disable-blink-features=AutomationControlled")
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     options.add_experimental_option("useAutomationExtension", False)
 
-    # Performance and security options
-    options.add_argument("--no-sandbox")  # Bypass OS security model
-    options.add_argument("--disable-dev-shm-usage")  # Overcome limited resource problems
-    options.add_argument("--disable-gpu")  # Disable GPU acceleration
-    options.add_argument("--disable-web-security")  # Disable web security
-    options.add_argument("--allow-running-insecure-content")  # Allow mixed content
-
-    # Run in headless mode for automation
-    options.add_argument("--headless")  # Run in headless mode
-
-    print("🔧 Chrome configured: Incognito mode, no extensions, optimized for analysis")
+    print("🔧 Chrome optimized: Headless mode, performance-focused settings")
 
     service = ChromeService(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=options)
@@ -70,14 +177,12 @@ def get_pagespeed_results(url_to_test, current_index=1, total_urls=1):
         analysis_url = f"https://pagespeed.web.dev/analysis?url={url_to_test}"
         print(f"Navigating to: {analysis_url}")
         driver.get(analysis_url)
-        print("Waiting for analysis to complete...")
 
-        # Wait for the page to load and analysis to complete
-        # We'll wait for either JSON object to be available first
-        print("⏳ Waiting for Lighthouse JSON data to be available...")
+        print("⏳ Waiting for analysis to complete...")        # Optimized wait for Lighthouse JSON data (reduced from 180s to 120s)
+        print("⚡ Waiting for Lighthouse JSON data (optimized timeout: 120s)...")
 
         # Wait for at least one of the JSON objects to be available
-        WebDriverWait(driver, 180).until(
+        WebDriverWait(driver, 120).until(
             lambda driver: driver.execute_script(
                 "return window.__LIGHTHOUSE_MOBILE_JSON__ || window.__LIGHTHOUSE_DESKTOP_JSON__;"
             )
@@ -85,12 +190,11 @@ def get_pagespeed_results(url_to_test, current_index=1, total_urls=1):
 
         print("✅ Initial Lighthouse JSON data detected.")
 
-        # Now wait a bit more for both mobile and desktop data to be fully loaded
-        print("⏳ Waiting for both mobile and desktop data to load...")
+        # Reduced additional wait time for both datasets
+        print("⚡ Waiting for both mobile and desktop data (optimized: 30s max)...")
 
-        # Check if both are available, if not wait a bit more
-        max_additional_wait = 60  # seconds
-        wait_interval = 5  # seconds
+        max_additional_wait = 30  # Reduced from 60 to 30 seconds
+        wait_interval = 3  # Reduced from 5 to 3 seconds for more responsive checking
         elapsed = 0
 
         while elapsed < max_additional_wait:
@@ -111,6 +215,9 @@ def get_pagespeed_results(url_to_test, current_index=1, total_urls=1):
             elapsed += wait_interval
 
         print("🔍 Extracting available results...")
+
+        # Capture screenshots before extracting data (optimized for Full HD mobile and desktop)
+        capture_full_hd_screenshots(driver, url_to_test, current_index, enable_screenshots)
 
         # Get the final URL (remove query parameters)
         final_url = driver.current_url.split("?")[0]
@@ -355,12 +462,19 @@ if __name__ == "__main__":
         print("No URLs found to test. Exiting.")
         exit(1)
 
-    print(f"Starting Lighthouse analysis for {len(test_urls)} URLs...")
+    # Ask user if they want screenshot capture
+    response = input("📸 Enable screenshot capture? (Y/n): ").lower().strip()
+    enable_screenshots = response != 'n'
+
+    if enable_screenshots:
+        print(f"📸 Screenshots will be saved to a timestamped directory")
+
+    print(f"🚀 Starting Lighthouse analysis for {len(test_urls)} URLs...")
     print("=" * 60)
 
     for i, url in enumerate(test_urls, 1):
-        # Get the lighthouse results for each URL with progress tracking
-        page_speed_scores = get_pagespeed_results(url, i, len(test_urls))
+        # Get the lighthouse results for each URL with progress tracking and optional screenshots
+        page_speed_scores = get_pagespeed_results(url, i, len(test_urls), enable_screenshots)
         # Write the results to a CSV file
         if page_speed_scores:
             # Write main scores
@@ -374,7 +488,19 @@ if __name__ == "__main__":
             delay = random.randint(5, 10)
             print(f"⏳ Waiting {delay} seconds before next test...")
             time.sleep(delay)
+
     print("\n" + "=" * 60)
     print("🎉 All tests completed!")
     print("📊 Generated files:")
     print("  • pagespeed_results.csv - Core performance metrics and scores")
+
+    # Show screenshot summary if enabled
+    if enable_screenshots and SCREENSHOT_DIR and os.path.exists(SCREENSHOT_DIR):
+        screenshots = [f for f in os.listdir(SCREENSHOT_DIR) if f.endswith('.png')]
+        if screenshots:
+            print(f"  📸 {SCREENSHOT_DIR}/ - Screenshots ({len(screenshots)} files)")
+            mobile_screenshots = [f for f in screenshots if f.startswith('fullhd_mobile_')]
+            desktop_screenshots = [f for f in screenshots if f.startswith('fullhd_desktop_')]
+            print(f"    📱 Mobile: {len(mobile_screenshots)} | 🖥️  Desktop: {len(desktop_screenshots)}")
+        else:
+            print("  ⚠️  No screenshots were captured")
