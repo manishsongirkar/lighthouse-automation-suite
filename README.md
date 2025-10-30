@@ -227,50 +227,80 @@ python generate_html_report.py
 ## 📈 Sample Output
 
 ```
-📊 PAGESPEED INSIGHTS ANALYSIS REPORT
-================================================================================
-Generated on: 2025-10-14 14:13:42
-Total URLs Analyzed: 2
+� Lighthouse Automation Suite Workflow
+==================================================
+🧹 Cleaning up existing result files...
+✅ Cleanup completed - removed 2 file(s)
+✅ Using virtual environment: .venv/bin/python
+� URL Analysis Results:
+   📄 Total lines in file: 2
+   ✅ Valid URLs found: 2
 
-📱 MOBILE PERFORMANCE SCORES
-----------------------------------------
-https://www.google.com              | Perf:  85 | Acc:  91 | BP:  93 | SEO:  73
-https://www.github.com              | Perf:  45 | Acc:  97 | BP:  96 | SEO: 100
+📸 Enable Full HD full-page screenshot capture? (Y/n): Y
+📸 Using optimized script with Full HD screenshot capture
 
-🖥️  DESKTOP PERFORMANCE SCORES
-----------------------------------------
-https://www.google.com              | Perf:  92 | Acc:  91 | BP:  93 | SEO:  73
-https://www.github.com              | Perf:  65 | Acc:  97 | BP:  96 | SEO: 100
+🔄 Optimized Lighthouse Analysis with Full HD Screenshots...
+✅ Successfully loaded 2 valid URLs from urls.txt
+📸 Screenshots will be saved to a timestamped directory
+🚀 Starting Lighthouse analysis for 2 URLs...
+============================================================
+🔄 Processing URL 1/2 (50.0%)
+� Current URL: https://www.google.com
+============================================================
+🔧 Chrome optimized: Headless mode, performance-focused settings
+⚡ Waiting for Lighthouse JSON data (optimized timeout: 120s)...
+✅ Both mobile and desktop JSON data are available!
+📁 Created screenshot directory: screenshots-20251030_115303
+📸 Capturing Full HD screenshots for mobile and desktop...
+📱 Switched to mobile view
+✅ Full HD mobile screenshot saved: screenshots-20251030_115303/fullhd_mobile_01_www.google.com.png
+🖥️ Switched to desktop view
+✅ Full HD desktop screenshot saved: screenshots-20251030_115303/fullhd_desktop_01_www.google.com.png
 
-⚡ CORE WEB VITALS SUMMARY
---------------------------------------------------
-📱 MOBILE METRICS:
-  First Contentful Paint   : 2.0s
-  Largest Contentful Paint : 4.2s
-  Total Blocking Time      : 650ms
-  Cumulative Layout Shift  : 0.12
-  Speed Index              : 4.5s
+📱 MOBILE PERFORMANCE SCORES:
+  Mobile Performance: 84 | Accessibility: 88 | Best Practices: 92 | SEO: 73
+  First Contentful Paint: 0.8s | Largest Contentful Paint: 0.8s
+  Total Blocking Time: 630ms | Cumulative Layout Shift: 0.021
 
-🖥️  DESKTOP METRICS:
-  First Contentful Paint   : 950ms
-  Largest Contentful Paint : 2.4s
-  Total Blocking Time      : 460ms
-  Cumulative Layout Shift  : 0.09
-  Speed Index              : 2.7s
+💻 DESKTOP PERFORMANCE SCORES:
+  Desktop Performance: 77 | Accessibility: 88 | Best Practices: 92 | SEO: 73
+  First Contentful Paint: 0.2s | Largest Contentful Paint: 0.2s
+  Total Blocking Time: 550ms | Cumulative Layout Shift: 0.004
 
-⚠️  PERFORMANCE ISSUES (Scores < 90)
---------------------------------------------------
-https://www.github.com:
-  ❌ Mobile Performance: 45
-  ❌ Desktop Performance: 65
-  🟠 Mobile LCP: 5.2s (Poor - exceeds 4.0s threshold)
-  🟠 Mobile TBT: 850ms (Poor - exceeds 600ms threshold)
+============================================================
+🎉 All tests completed!
+📊 Generated files:
+  • pagespeed_results.csv - Core performance metrics and scores
+  📸 screenshots-20251030_115303/ - Full HD Screenshots (4 files)
+    📱 Mobile: 2 | 🖥️  Desktop: 2
+
+==================================================
+🎉 WORKFLOW COMPLETED SUCCESSFULLY!
+==================================================
+📂 Generated Files:
+   📊 pagespeed_results.csv     - Core performance metrics and scores
+   🎯 pagespeed_report.html     - Performance dashboard
+   📸 screenshots-20251030_115303/     - Full HD Screenshots (4 files)
+       � Mobile: 2 | 🖥️  Desktop: 2
+
+🌐 Open HTML report in browser? (y/n): y
+✅ HTML report opened in browser
+
+📂 Open Full HD screenshot directory? (y/n): y
+✅ Screenshot directory opened: screenshots-20251030_115303
+
+💡 Next Steps:
+   • Review the performance dashboard for visual insights
+   • Import CSV data into Excel/Google Sheets for further analysis
+   • Check Full HD screenshot files for complete page verification
+   • Focus on URLs with Core Web Vitals issues
+   • Re-run analysis after implementing optimizations
 ```
 
 ## ⚙️ Configuration Options
 
 ### Modify Delays
-Edit `main.py` line ~280 to adjust delays between requests:
+Edit `main.py` to adjust delays between requests:
 ```python
 delay = random.randint(5, 10)  # 5-10 second random delay
 ```
@@ -281,10 +311,22 @@ Modify the CSV filename in `main.py`:
 write_to_csv(page_speed_scores, "custom_filename.csv")
 ```
 
-### Headless Mode
-Toggle browser visibility in `main.py`:
+### Screenshot Settings
+Enable/disable screenshots in the workflow:
 ```python
-# options.add_argument("--headless")  # Comment out to see browser
+# In run_analysis.py - interactive prompt
+📸 Enable Full HD full-page screenshot capture? (Y/n): Y
+
+# Or pass directly to main.py
+enable_screenshots = True  # Set to False to disable
+```
+
+### Browser Configuration
+The tool runs in optimized headless mode by default. To modify browser settings, edit `main.py`:
+```python
+# Browser is automatically configured for optimal performance
+# Headless mode is enabled by default for better performance
+options.add_argument("--headless")  # Already enabled for optimization
 ```
 
 ## 🔧 Troubleshooting
@@ -308,12 +350,18 @@ Toggle browser visibility in `main.py`:
 
 **Missing Dependencies:**
 ```bash
-# Manual installation
-pip install selenium webdriver-manager fake-useragent pandas
+# Manual installation of all current dependencies
+pip install selenium webdriver-manager fake-useragent pandas openpyxl
 
 # Or re-run the automated setup script
 ./setup.sh
 ```
+
+**Screenshot Issues:**
+- Ensure sufficient disk space for Full HD screenshots
+- Check write permissions in the project directory
+- Screenshots require successful Lighthouse analysis completion
+- If screenshots fail, analysis will continue normally
 
 **Setup Issues:**
 If you encounter any setup problems, try running the automated setup script:
@@ -327,23 +375,31 @@ This will verify your environment and reinstall all dependencies.
 
 ### For Large URL Lists
 - Start with small batches (10-20 URLs)
-- Use longer delays (15-30 seconds)
-- Run during off-peak hours
-- Monitor for rate limiting
+- Use longer delays (15-30 seconds) between requests
+- Run during off-peak hours to avoid rate limiting
+- Monitor for rate limiting and adjust delays accordingly
+- Consider disabling screenshots for very large batches to save time and space
+
+### For Screenshot Capture
+- Ensure adequate disk space (approximately 300-400 KB per URL)
+- Use screenshots for important analyses and client deliverables
+- Full HD screenshots are ideal for presentations and documentation
+- Screenshots can be disabled for routine monitoring to improve speed
 
 ### For Accurate Results
-- Test the same URLs multiple times
+- Test the same URLs multiple times for consistency
 - Compare results across different time periods
-- Consider geographic location differences
-- Account for CDN and caching effects
+- Consider geographic location differences in CDN performance
+- Account for caching effects and server load variations
 
 ## 🛡️ Anti-Detection Features
 
-- Random user agents
-- Disabled automation flags
+- Random user agents for each browser session
+- Disabled automation flags and detection bypassing
 - Navigator.webdriver property masking
-- Configurable request delays
-- Headless browser operation
+- Configurable request delays between URL processing
+- Optimized headless browser operation
+- Performance-focused Chrome settings to avoid detection
 
 ## 📁 Project Structure
 
