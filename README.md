@@ -65,9 +65,12 @@ For experienced users who want to get started immediately:
 git clone https://github.com/manishsongirkar/lighthouse-automation-suite.git
 cd lighthouse-automation-suite
 
-# Run automated setup (recommended)
+# Run enhanced automated setup (recommended)
 chmod +x setup.sh
 ./setup.sh
+
+# Validate setup (optional but recommended)
+python validate_setup.py
 
 # Add your URLs to analyze
 echo "https://example.com" >> urls.txt
@@ -90,24 +93,30 @@ Your comprehensive dashboard will be ready in minutes! For detailed setup and cu
 
 ### Installation
 
-#### Option 1: Automated Setup (Recommended) 🚀
+#### Option 1: Enhanced Automated Setup (Recommended) 🚀
 ```bash
 # 1. Clone or download this project
 git clone https://github.com/manishsongirkar/lighthouse-automation-suite.git
 cd lighthouse-automation-suite
 
-# 2. Run the automated setup script
+# 2. Run the enhanced automated setup script
 chmod +x setup.sh
 ./setup.sh
+
+# 3. Validate your setup (optional but recommended)
+python validate_setup.py
 ```
 
-The setup script will automatically:
-- ✅ Check Python 3.7+ installation
-- ✅ Create virtual environment (.venv/)
-- ✅ Install all required dependencies
-- ✅ Create sample `urls.txt` file
-- ✅ Verify Google Chrome installation
-- ✅ Test all modules for proper installation
+The enhanced setup script will automatically:
+- ✅ Detect your operating system (macOS, Linux, Windows)
+- ✅ Check Python 3.7+ installation with version validation
+- ✅ Create virtual environment (.venv/) with cross-platform support
+- ✅ Install all required dependencies from requirements.txt
+- ✅ Create sample `urls.txt` file with examples and documentation
+- ✅ Verify Google Chrome installation across all platforms
+- ✅ Test all modules and ChromeDriver download capability
+- ✅ Provide comprehensive setup validation and next steps
+- ✅ Give platform-specific activation instructions
 
 #### Option 2: Manual Setup
 
@@ -226,13 +235,16 @@ python generate_html_report.py
 
 ## 📈 Sample Output
 
-```
-� Lighthouse Automation Suite Workflow
+```bash
+$ python3 run_analysis.py
+🚀 Lighthouse Automation Suite Workflow
 ==================================================
 🧹 Cleaning up existing result files...
-✅ Cleanup completed - removed 2 file(s)
+   ℹ️  pagespeed_results.csv does not exist (skip)
+   ℹ️  pagespeed_report.html does not exist (skip)
+✅ Cleanup completed - no files to remove
 ✅ Using virtual environment: .venv/bin/python
-� URL Analysis Results:
+📊 URL Analysis Results:
    📄 Total lines in file: 2
    ✅ Valid URLs found: 2
 
@@ -245,49 +257,117 @@ python generate_html_report.py
 🚀 Starting Lighthouse analysis for 2 URLs...
 ============================================================
 🔄 Processing URL 1/2 (50.0%)
-� Current URL: https://www.google.com
+📊 Current URL: https://www.google.com
 ============================================================
 🔧 Chrome optimized: Headless mode, performance-focused settings
+Navigating to: https://pagespeed.web.dev/analysis?url=https://www.google.com
+⏳ Waiting for analysis to complete...
 ⚡ Waiting for Lighthouse JSON data (optimized timeout: 120s)...
+✅ Initial Lighthouse JSON data detected.
+⚡ Waiting for both mobile and desktop data (optimized: 30s max)...
 ✅ Both mobile and desktop JSON data are available!
-📁 Created screenshot directory: screenshots-20251030_115303
+� Extracting available results...
+�📁 Created screenshot directory: screenshots-20251105_143022
 📸 Capturing Full HD screenshots for mobile and desktop...
 📱 Switched to mobile view
-✅ Full HD mobile screenshot saved: screenshots-20251030_115303/fullhd_mobile_01_www.google.com.png
+✅ Full HD mobile screenshot saved: screenshots-20251105_143022/fullhd_mobile_01_www.google.com.png
 🖥️ Switched to desktop view
-✅ Full HD desktop screenshot saved: screenshots-20251030_115303/fullhd_desktop_01_www.google.com.png
+✅ Full HD desktop screenshot saved: screenshots-20251105_143022/fullhd_desktop_01_www.google.com.png
+Final URL: https://pagespeed.web.dev/analysis
+📱 Extracting mobile scores and metrics...
+💻 Extracting desktop scores and metrics...
 
-📱 MOBILE PERFORMANCE SCORES:
-  Mobile Performance: 84 | Accessibility: 88 | Best Practices: 92 | SEO: 73
-  First Contentful Paint: 0.8s | Largest Contentful Paint: 0.8s
-  Total Blocking Time: 630ms | Cumulative Layout Shift: 0.021
+📊 Performance Metrics Summary
+========================================================
+Metric                     | 📱 Mobile     | 🖥️  Desktop 
+========================================================
+Performance                | 89 ⚠️         | 100 ✅       
+Accessibility              | 95 ✅         | 95 ✅        
+Best Practices             | 96 ✅         | 96 ✅        
+SEO                        | 91 ✅         | 92 ✅        
+First Contentful Paint     | 1.2 s        | 0.4 s       
+Largest Contentful Paint   | 1.3 s        | 0.6 s       
+Total Blocking Time        | 120 ms       | 0 ms        
+Cumulative Layout Shift    | 0.000        | 0.000       
+Speed Index                | 1.4 s        | 0.7 s       
+Time to Interactive        | 1.7 s        | 0.8 s       
+First Meaningful Paint     | 1.2 s        | 0.4 s       
+========================================================
 
-💻 DESKTOP PERFORMANCE SCORES:
-  Desktop Performance: 77 | Accessibility: 88 | Best Practices: 92 | SEO: 73
-  First Contentful Paint: 0.2s | Largest Contentful Paint: 0.2s
-  Total Blocking Time: 550ms | Cumulative Layout Shift: 0.004
+Results for https://www.google.com successfully written to pagespeed_results.csv
+✅ Successfully processed: https://www.google.com
+⏳ Waiting 7 seconds before next test...
+============================================================
+🔄 Processing URL 2/2 (100.0%)
+📊 Current URL: https://www.github.com
+============================================================
+� Chrome optimized: Headless mode, performance-focused settings
+Navigating to: https://pagespeed.web.dev/analysis?url=https://www.github.com
+⏳ Waiting for analysis to complete...
+⚡ Waiting for Lighthouse JSON data (optimized timeout: 120s)...
+✅ Initial Lighthouse JSON data detected.
+⚡ Waiting for both mobile and desktop data (optimized: 30s max)...
+✅ Both mobile and desktop JSON data are available!
+🔍 Extracting available results...
+📸 Capturing Full HD screenshots for mobile and desktop...
+📱 Switched to mobile view
+✅ Full HD mobile screenshot saved: screenshots-20251105_143022/fullhd_mobile_02_www.github.com.png
+🖥️ Switched to desktop view
+✅ Full HD desktop screenshot saved: screenshots-20251105_143022/fullhd_desktop_02_www.github.com.png
+Final URL: https://pagespeed.web.dev/analysis
+📱 Extracting mobile scores and metrics...
+💻 Extracting desktop scores and metrics...
+
+📊 Performance Metrics Summary
+========================================================
+Metric                     | 📱 Mobile     | 🖥️  Desktop 
+========================================================
+Performance                | 62 ⚠️         | 78 ⚠️        
+Accessibility              | 83 ⚠️         | 83 ⚠️        
+Best Practices             | 78 ⚠️         | 78 ⚠️        
+SEO                        | 91 ✅         | 92 ✅        
+First Contentful Paint     | 2.1 s        | 0.9 s       
+Largest Contentful Paint   | 4.2 s        | 1.8 s       
+Total Blocking Time        | 580 ms       | 280 ms      
+Cumulative Layout Shift    | 0.095        | 0.042       
+Speed Index                | 3.8 s        | 2.1 s       
+Time to Interactive        | 4.9 s        | 2.3 s       
+First Meaningful Paint     | 2.3 s        | 1.1 s       
+========================================================
+
+Results for https://www.github.com successfully written to pagespeed_results.csv
+✅ Successfully processed: https://www.github.com
+Browser closed for URL: https://www.github.com
 
 ============================================================
 🎉 All tests completed!
 📊 Generated files:
   • pagespeed_results.csv - Core performance metrics and scores
-  📸 screenshots-20251030_115303/ - Full HD Screenshots (4 files)
+  📸 screenshots-20251105_143022/ - Screenshots (4 files)
     📱 Mobile: 2 | 🖥️  Desktop: 2
+✅ Optimized Lighthouse Analysis with Full HD Screenshots completed successfully
+
+🔄 HTML Dashboard Generation...
+📊 Processing 2 unique URLs for enhanced HTML report
+✅ Enhanced HTML report generated: pagespeed_report.html
+   Open in browser: file:///Users/john/Sites/pagespeed-insights-automation/pagespeed_report.html
+✅ HTML Dashboard Generation completed successfully
 
 ==================================================
 🎉 WORKFLOW COMPLETED SUCCESSFULLY!
 ==================================================
+
 📂 Generated Files:
    📊 pagespeed_results.csv     - Core performance metrics and scores
    🎯 pagespeed_report.html     - Performance dashboard
-   📸 screenshots-20251030_115303/     - Full HD Screenshots (4 files)
-       � Mobile: 2 | 🖥️  Desktop: 2
+   📸 screenshots-20251105_143022/     - Full HD Screenshots (4 files)
+       📱 Mobile: 2 | 🖥️  Desktop: 2
 
 🌐 Open HTML report in browser? (y/n): y
 ✅ HTML report opened in browser
 
 📂 Open Full HD screenshot directory? (y/n): y
-✅ Screenshot directory opened: screenshots-20251030_115303
+✅ Screenshot directory opened: screenshots-20251105_143022
 
 💡 Next Steps:
    • Review the performance dashboard for visual insights
@@ -364,12 +444,32 @@ pip install selenium webdriver-manager fake-useragent pandas openpyxl
 - If screenshots fail, analysis will continue normally
 
 **Setup Issues:**
-If you encounter any setup problems, try running the automated setup script:
+If you encounter any setup problems, try the following steps:
+
+1. **Run the enhanced setup script:**
 ```bash
 chmod +x setup.sh
 ./setup.sh
 ```
-This will verify your environment and reinstall all dependencies.
+
+2. **Validate your setup:**
+```bash
+python validate_setup.py
+```
+This will check all components and provide detailed diagnostics.
+
+3. **Manual dependency installation:**
+```bash
+# Activate virtual environment first
+source .venv/bin/activate  # macOS/Linux
+# or
+.venv\Scripts\activate     # Windows
+
+# Install/reinstall dependencies
+pip install --force-reinstall -r requirements.txt
+```
+
+The validation script will identify specific issues and provide targeted solutions.
 
 ## 📋 Best Practices
 

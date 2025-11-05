@@ -228,21 +228,31 @@ def get_pagespeed_results(url_to_test, current_index=1, total_urls=1, enable_scr
 
         # Extract mobile data
         mobile_json = driver.execute_script("return window.__LIGHTHOUSE_MOBILE_JSON__;")
+        mobile_data = None
         if mobile_json:
             print("📱 Extracting mobile scores and metrics...")
             mobile_data = extract_lighthouse_data(mobile_json, "mobile")
-            result.update(mobile_data)
+            # Remove display data before updating result (keep it separate for table display)
+            mobile_data_clean = {k: v for k, v in mobile_data.items() if not k.startswith('_')}
+            result.update(mobile_data_clean)
         else:
             print("⚠️  Mobile JSON data not available")
 
         # Extract desktop data
         desktop_json = driver.execute_script("return window.__LIGHTHOUSE_DESKTOP_JSON__;")
+        desktop_data = None
         if desktop_json:
             print("💻 Extracting desktop scores and metrics...")
             desktop_data = extract_lighthouse_data(desktop_json, "desktop")
-            result.update(desktop_data)
+            # Remove display data before updating result (keep it separate for table display)
+            desktop_data_clean = {k: v for k, v in desktop_data.items() if not k.startswith('_')}
+            result.update(desktop_data_clean)
         else:
             print("⚠️  Desktop JSON data not available")
+
+        # Display results in table format
+        if mobile_data or desktop_data:
+            display_performance_table(mobile_data, desktop_data)
 
         return result
 
@@ -265,6 +275,7 @@ def extract_lighthouse_data(lighthouse_json, device_type):
         dict: Dictionary with scores and metrics for the specific device type
     """
     data = {}
+    display_data = {}  # Separate data structure for table display
 
     try:
         # Extract category scores (Performance, Accessibility, Best Practices, SEO)
@@ -272,28 +283,29 @@ def extract_lighthouse_data(lighthouse_json, device_type):
 
         for category_key, category_data in categories.items():
             category_name = category_data.get('title', category_key).lower().replace(' ', '_')
+            category_title = category_data.get('title', category_key)
             score = category_data.get('score')
             if score is not None:
                 # Convert score from 0-1 scale to 0-100 scale
                 score_value = int(score * 100)
                 data[f"{device_type}_{category_name}"] = score_value
-                print(f"  {device_type.title()} {category_data.get('title', category_key)}: {score_value}")
+                display_data[category_title] = score_value
 
         # Extract Core Web Vitals and other metrics
         audits = lighthouse_json.get('audits', {})
 
         # Define the metrics we want to extract
         metrics_mapping = {
-            'first-contentful-paint': 'first_contentful_paint',
-            'largest-contentful-paint': 'largest_contentful_paint',
-            'total-blocking-time': 'total_blocking_time',
-            'cumulative-layout-shift': 'cumulative_layout_shift',
-            'speed-index': 'speed_index',
-            'interactive': 'time_to_interactive',
-            'first-meaningful-paint': 'first_meaningful_paint'
+            'first-contentful-paint': ('First Contentful Paint', 'first_contentful_paint'),
+            'largest-contentful-paint': ('Largest Contentful Paint', 'largest_contentful_paint'),
+            'total-blocking-time': ('Total Blocking Time', 'total_blocking_time'),
+            'cumulative-layout-shift': ('Cumulative Layout Shift', 'cumulative_layout_shift'),
+            'speed-index': ('Speed Index', 'speed_index'),
+            'interactive': ('Time to Interactive', 'time_to_interactive'),
+            'first-meaningful-paint': ('First Meaningful Paint', 'first_meaningful_paint')
         }
 
-        for audit_key, metric_name in metrics_mapping.items():
+        for audit_key, (metric_display_name, metric_name) in metrics_mapping.items():
             audit = audits.get(audit_key, {})
             if audit:
                 display_value = audit.get('displayValue', '')
@@ -318,12 +330,95 @@ def extract_lighthouse_data(lighthouse_json, device_type):
                     continue
 
                 data[f"{device_type}_{metric_name}"] = value
-                print(f"  {device_type.title()} {metric_name.replace('_', ' ').title()}: {value}")
+                display_data[metric_display_name] = value
 
     except Exception as e:
         print(f"Error extracting {device_type} data from Lighthouse JSON: {e}")
 
+    # Store display data for table formatting
+    data['_display_data'] = display_data
+    data['_device_type'] = device_type
+
     return data
+
+def display_performance_table(mobile_data, desktop_data):
+    """
+    Display performance metrics in a formatted table
+    """
+    # Extract display data
+    mobile_display = mobile_data.get('_display_data', {}) if mobile_data else {}
+    desktop_display = desktop_data.get('_display_data', {}) if desktop_data else {}
+
+    # Combine all unique metrics
+    all_metrics = set(mobile_display.keys()) | set(desktop_display.keys())
+
+    if not all_metrics:
+        print("⚠️  No performance data available for table display")
+        return
+
+    # Define the order of metrics for better organization
+    metric_order = [
+        'Performance', 'Accessibility', 'Best Practices', 'SEO',
+        'First Contentful Paint', 'Largest Contentful Paint',
+        'Total Blocking Time', 'Cumulative Layout Shift',
+        'Speed Index', 'Time to Interactive', 'First Meaningful Paint'
+    ]
+
+    # Sort metrics by defined order, with unknown metrics at the end
+    ordered_metrics = []
+    for metric in metric_order:
+        if metric in all_metrics:
+            ordered_metrics.append(metric)
+
+    # Add any remaining metrics not in the predefined order
+    for metric in sorted(all_metrics):
+        if metric not in ordered_metrics:
+            ordered_metrics.append(metric)
+
+    # Calculate column widths
+    metric_width = max(len(metric) for metric in ordered_metrics) + 2
+    mobile_width = max(len(str(mobile_display.get(metric, 'N/A'))) for metric in ordered_metrics) + 2
+    desktop_width = max(len(str(desktop_display.get(metric, 'N/A'))) for metric in ordered_metrics) + 2
+
+    # Ensure minimum widths for headers
+    metric_width = max(metric_width, 25)
+    mobile_width = max(mobile_width, 12)
+    desktop_width = max(desktop_width, 12)
+
+    # Print table header
+    print(f"\n📊 Performance Metrics Summary")
+    print("=" * (metric_width + mobile_width + desktop_width + 6))
+    print(f"{'Metric':<{metric_width}} | {'📱 Mobile':<{mobile_width}} | {'🖥️  Desktop':<{desktop_width}}")
+    print("=" * (metric_width + mobile_width + desktop_width + 6))
+
+    # Print metrics rows
+    for metric in ordered_metrics:
+        mobile_value = mobile_display.get(metric, 'N/A')
+        desktop_value = desktop_display.get(metric, 'N/A')
+
+        # Add color coding for scores (if they're numeric)
+        mobile_display_value = format_metric_value(mobile_value)
+        desktop_display_value = format_metric_value(desktop_value)
+
+        print(f"{metric:<{metric_width}} | {mobile_display_value:<{mobile_width}} | {desktop_display_value:<{desktop_width}}")
+
+    print("=" * (metric_width + mobile_width + desktop_width + 6))
+    print()
+
+def format_metric_value(value):
+    """
+    Format metric values with color coding for scores
+    """
+    if str(value).isdigit():
+        score = int(value)
+        if score >= 90:
+            return f"{value} ✅"  # Good
+        elif score >= 50:
+            return f"{value} ⚠️"   # Needs improvement
+        else:
+            return f"{value} ❌"   # Poor
+    else:
+        return str(value)
 
 def write_to_csv(data, filename="pagespeed_results.csv"):
     """
